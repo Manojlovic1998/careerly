@@ -321,15 +321,13 @@ const handleSearchInput = (event: Event) => {
               {{ formatSalary(job.salary) }}
             </span>
           </div>
-          <!-- Apply Button -->
-          <a
-            :href="job.urls.apply"
-            target="_blank"
-            rel="noopener noreferrer"
+          <!-- View More Button -->
+          <router-link
+            :to="{ name: 'job-detail', params: { slug: job.slug } }"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             View More
-          </a>
+          </router-link>
         </div>
       </div>
     </div>

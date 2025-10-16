@@ -4,6 +4,10 @@ import Fuse from 'fuse.js'
 import { jobService } from '@/services/jobService'
 import { useSearch } from '@/composables/useSearch'
 import type { JobItem } from '@/models/job'
+import { formatSalary, formatJobField, formatLocation } from '@/utils/formatters'
+import { SEARCH_CONFIG } from '@/constants'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
 
 // Reactive state
 const jobs = ref<JobItem[]>([])
@@ -15,21 +19,7 @@ const totalJobs = ref(0)
 const { searchQuery, setSearchQuery, initializeSearchFromRoute } = useSearch()
 
 // Fuse.js configuration
-const fuseOptions = {
-  keys: [
-    { name: 'title', weight: 0.3 },
-    { name: 'company.name', weight: 0.25 },
-    { name: 'descr', weight: 0.2 },
-    { name: 'skills', weight: 0.15 },
-    { name: 'employment_type', weight: 0.05 },
-    { name: 'experience', weight: 0.05 },
-    { name: 'locations.location.text', weight: 0.1 },
-  ],
-  threshold: 0.3,
-  includeScore: true,
-  includeMatches: true,
-  minMatchCharLength: 2,
-}
+const fuseOptions = SEARCH_CONFIG.FUSE_OPTIONS
 
 // Create Fuse instance
 const fuse = ref<Fuse<JobItem> | null>(null)
@@ -87,26 +77,6 @@ onMounted(() => {
   initializeSearchFromRoute()
   fetchJobs()
 })
-
-// Utility function to format salary
-const formatSalary = (salary: JobItem['salary']) => {
-  if (!salary.salary_min && !salary.salary_max) return 'Salary not specified'
-
-  const currency = salary.currency || 'USD'
-  const min = salary.salary_min ? `${currency} ${salary.salary_min.toLocaleString()}` : ''
-  const max = salary.salary_max ? `${currency} ${salary.salary_max.toLocaleString()}` : ''
-
-  if (min && max) return `${min} - ${max}`
-  if (min) return `From ${min}`
-  if (max) return `Up to ${max}`
-  return 'Salary not specified'
-}
-
-// Utility function to format location
-const formatLocation = (locations: JobItem['locations']) => {
-  if (!locations || locations.length === 0) return 'Location not specified'
-  return locations.map((loc) => loc.location.text).join(', ')
-}
 
 // Handle search input changes
 const handleSearchInput = (event: Event) => {
@@ -184,22 +154,17 @@ const handleSearchInput = (event: Event) => {
   <!-- Container Fluid -->
   <div class="container-fluid">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-3 text-gray-600">Loading jobs...</span>
-    </div>
+    <LoadingSpinner v-if="loading" message="Loading jobs..." />
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-      <h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Jobs</h3>
-      <p class="text-red-600 mb-4">{{ error }}</p>
-      <button
-        @click="fetchJobs()"
-        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-      >
-        Try Again
-      </button>
-    </div>
+    <AlertMessage
+      v-else-if="error"
+      type="error"
+      title="Error Loading Jobs"
+      :message="error"
+      show-retry
+      @retry="fetchJobs()"
+    />
 
     <!-- Jobs List -->
     <div v-else-if="filteredJobs?.length > 0" class="grid grid-cols-1 md:grid-cols-2 py-10 gap-1.5">
@@ -308,12 +273,12 @@ const handleSearchInput = (event: Event) => {
             <span
               class="flex flex-row items-center px-3 py-1 bg-white/90 text-gray-800 rounded-full border border-gray-300 shadow-sm"
             >
-              {{ job.employment_type.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }}
+              {{ formatJobField(job.employment_type) }}
             </span>
             <span
               class="flex flex-row items-center px-3 py-1 bg-white/90 text-gray-800 rounded-full border border-gray-300 shadow-sm"
             >
-              {{ job.experience.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }}
+              {{ formatJobField(job.experience) }}
             </span>
             <span
               class="font-medium flex flex-row items-center text-gray-900 bg-white/90 px-3 py-1 rounded-full border border-gray-300 shadow-sm"

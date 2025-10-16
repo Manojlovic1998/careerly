@@ -3,6 +3,10 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { jobService } from '@/services/jobService'
 import type { JobItem } from '@/models/job'
+import { formatSalary, formatLocation, formatDate, formatJobField } from '@/utils/formatters'
+import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import AlertMessage from '@/components/ui/AlertMessage.vue'
+import AppButton from '@/components/ui/AppButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -49,33 +53,6 @@ onMounted(() => {
   fetchJobDetails()
 })
 
-// Utility functions
-const formatSalary = (salary: JobItem['salary']) => {
-  if (!salary.salary_min && !salary.salary_max) return 'Salary not specified'
-
-  const currency = salary.currency || 'USD'
-  const min = salary.salary_min ? `${currency} ${salary.salary_min.toLocaleString()}` : ''
-  const max = salary.salary_max ? `${currency} ${salary.salary_max.toLocaleString()}` : ''
-
-  if (min && max) return `${min} - ${max}`
-  if (min) return `From ${min}`
-  if (max) return `Up to ${max}`
-  return 'Salary not specified'
-}
-
-const formatLocation = (locations: JobItem['locations']) => {
-  if (!locations || locations.length === 0) return 'Location not specified'
-  return locations.map((loc) => loc.location.text).join(', ')
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
 const goBack = () => {
   router.back()
 }
@@ -95,22 +72,17 @@ const goBack = () => {
     </button>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-3 text-gray-600">Loading job details...</span>
-    </div>
+    <LoadingSpinner v-if="loading" message="Loading job details..." />
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-      <h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Job</h3>
-      <p class="text-red-600 mb-4">{{ error }}</p>
-      <button
-        @click="fetchJobDetails()"
-        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-      >
-        Try Again
-      </button>
-    </div>
+    <AlertMessage
+      v-else-if="error"
+      type="error"
+      title="Error Loading Job"
+      :message="error"
+      show-retry
+      @retry="fetchJobDetails()"
+    />
 
     <!-- Job Details -->
     <div v-else-if="job" class="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -167,13 +139,13 @@ const goBack = () => {
           <div class="text-center p-4 bg-gray-50 rounded-lg">
             <h3 class="text-sm font-medium text-gray-600 mb-1">Employment Type</h3>
             <p class="text-lg font-semibold text-gray-900">
-              {{ job.employment_type.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }}
+              {{ formatJobField(job.employment_type) }}
             </p>
           </div>
           <div class="text-center p-4 bg-gray-50 rounded-lg">
             <h3 class="text-sm font-medium text-gray-600 mb-1">Experience Level</h3>
             <p class="text-lg font-semibold text-gray-900">
-              {{ job.experience.replace('-', ' ').replace(/\b\w/g, (l) => l.toUpperCase()) }}
+              {{ formatJobField(job.experience) }}
             </p>
           </div>
           <div class="text-center p-4 bg-gray-50 rounded-lg">
@@ -265,13 +237,8 @@ const goBack = () => {
               <h3 class="text-lg font-semibold text-gray-900">Ready to Apply?</h3>
               <p class="text-gray-600">Click the button below to apply for this position</p>
             </div>
-            <a
-              :href="job.urls.apply"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"
-            >
-              Apply Now
+            <a :href="job.urls.apply" target="_blank" rel="noopener noreferrer">
+              <AppButton size="lg" class="shadow-lg hover:shadow-xl"> Apply Now </AppButton>
             </a>
           </div>
         </div>

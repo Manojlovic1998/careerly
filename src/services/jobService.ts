@@ -1,4 +1,5 @@
-import type { JobItem, JobListResponse, JobDetailResponse } from '@/models/job'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { JobItem, JobListResponse } from '@/models/job'
 
 // Base API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.careerly.com'

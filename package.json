@@ -1,7 +1,16 @@
 {
   "name": "careerly",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A modern job board application with intelligent search",
+  "license": "SEE LICENSE IN LICENSE",
   "private": true,
+  "keywords": [
+    "vue",
+    "job-board",
+    "career",
+    "typescript",
+    "tailwind"
+  ],
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

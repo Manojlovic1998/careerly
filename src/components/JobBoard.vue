@@ -172,7 +172,7 @@ const handleSearchInput = (event: Event) => {
       <div
         v-for="job in filteredJobs"
         :key="job.id"
-        class="bg-white rounded-lg border border-gray-200 relative group block p-3 h-full w-full"
+        class="bg-white rounded-lg border border-gray-200 relative group block p-3 h-full w-full flex flex-col"
       >
         <!-- Job Header -->
         <div class="flex items-start justify-between mb-4">
@@ -268,7 +268,7 @@ const handleSearchInput = (event: Event) => {
         </div>
 
         <!-- Job Meta -->
-        <div class="flex items-center justify-between text-sm">
+        <div class="flex items-center justify-between text-sm mt-auto">
           <div class="flex items-center space-x-2 text-gray-800">
             <span
               class="flex flex-row items-center px-3 py-1 bg-white/90 text-gray-800 rounded-full border border-gray-300 shadow-sm"

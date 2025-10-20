@@ -2,7 +2,7 @@
 import type { JobItem, JobListResponse } from '@/models/job'
 
 // Base API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://feed.jobylon.com'
+const API_BASE_URL = 'https://feed.jobylon.com'
 const API_UID = import.meta.env.VITE_API_UID
 
 // API endpoints
